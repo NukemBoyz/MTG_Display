@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MTG Display - Operator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="operator-page">
+  <main class="operator-main">
+    <section class="operator-card">
+      <h1 class="operator-title">Operator</h1>
+      <div class="operator-status" id="operatorStatus">Connecting to board...</div>
+
+      <div class="operator-group">
+        <div class="operator-label">Display Page</div>
+        <button id="opPageCycleBtn" class="operator-block-btn" type="button">Page 1 of 1</button>
+        <button id="opHideBtn" class="operator-block-btn" type="button">Hide This Page</button>
+        <button id="opShowAllBtn" class="operator-block-btn" type="button">Show All Matches</button>
+      </div>
+
+      <div class="operator-group">
+        <div class="operator-label">Auto Cycle</div>
+        <button id="opAutoCycleBtn" class="operator-block-btn" type="button">Cycle Off</button>
+        <div class="cycle-timer-group" aria-label="Cycle timer">
+          <button class="cycle-timer-btn is-active" data-cycle-seconds="15" type="button">15s</button>
+          <button class="cycle-timer-btn" data-cycle-seconds="30" type="button">30s</button>
+          <button class="cycle-timer-btn" data-cycle-seconds="60" type="button">60s</button>
+        </div>
+      </div>
+
+      <div class="operator-group">
+        <div class="operator-label">Life Point System</div>
+        <div class="operator-mode-toggle">
+          <button id="opModeMtgBtn" class="operator-block-btn is-active" data-mode="mtg" type="button">Magic (20)</button>
+          <button id="opModeYugiohBtn" class="operator-block-btn" data-mode="yugioh" type="button">Yu-Gi-Oh (8000)</button>
+        </div>
+      </div>
+
+      <div class="operator-group">
+        <div class="operator-label">Life Totals (Current Page)</div>
+        <button id="opResetAllBtn" class="operator-block-btn operator-danger" type="button">Reset Life</button>
+      </div>
+
+      <div class="operator-group">
+        <div class="operator-label">All Matches - check to show, uncheck to hide</div>
+        <div class="operator-match-list" id="opMatchList"></div>
+      </div>
+
+      <div class="operator-group">
+        <div class="operator-label">Danger Zone</div>
+        <button id="opResetEverythingBtn" class="operator-block-btn operator-danger" type="button">Reset Everything (Names, Matches, Life)</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/operator.js"></script>
+</body>
+</html>

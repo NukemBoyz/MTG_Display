@@ -1,0 +1,789 @@
+:root {
+  --bg-1: #17140f;
+  --bg-2: #2b2216;
+  --panel: rgba(35, 28, 20, 0.9);
+  --panel-border: rgba(193, 150, 82, 0.6);
+  --text: #efe3c7;
+  --muted: #c7b58f;
+  --good: #22c55e;
+  --danger: #ef4444;
+  --accent: #d8a54d;
+  --title: #f8e8bf;
+  /* Board backdrop. Swapped per life-point system by the [data-life-mode]
+     rule below; the pages set that attribute from the shared lifeMode. */
+  --board-bg: url("Pictures/MTG.png");
+}
+
+body[data-life-mode="yugioh"] {
+  --board-bg: url("Pictures/YuGiOh.png");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* The browser enforces the HTML `hidden` attribute at a lower priority than
+   any author rule that sets `display`, and the layout rules further down set
+   `display` on .matches and .match-card unconditionally. Without this,
+   hiding a finished match leaves a stale card still painted on the board. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: "Barlow", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 20% 10%, rgba(216, 165, 77, 0.14), transparent 28%),
+    radial-gradient(circle at 78% 88%, rgba(109, 75, 33, 0.25), transparent 35%),
+    linear-gradient(rgba(14, 11, 8, 0.76), rgba(14, 11, 8, 0.82)),
+    var(--board-bg) center / cover no-repeat fixed,
+    linear-gradient(140deg, var(--bg-1), var(--bg-2));
+}
+
+.top-bar {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem 0.5rem;
+}
+
+.page-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2rem, 3.8vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: var(--title);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+#hidePageBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#hidePageBtn:disabled:hover {
+  transform: none;
+}
+
+h1 {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.07em;
+  color: var(--title);
+  font-size: clamp(2.4rem, 4vw, 4rem);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cycle-timer-group {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.cycle-timer-btn {
+  min-width: 4.2rem;
+}
+
+.cycle-timer-btn.is-active,
+.operator-block-btn.is-active {
+  border-color: rgba(255, 220, 138, 0.9);
+}
+
+.cycle-timer-btn.is-active,
+.operator-block-btn.is-active {
+  background:
+    linear-gradient(180deg, rgba(126, 92, 42, 0.96), rgba(73, 53, 27, 0.96));
+  color: #fff1c9;
+}
+
+button {
+  appearance: none;
+  border: 1px solid rgba(218, 173, 96, 0.65);
+  background:
+    linear-gradient(180deg, rgba(88, 66, 36, 0.92), rgba(53, 40, 22, 0.92));
+  color: #f3e5c0;
+  padding: 0.6rem 0.95rem;
+  border-radius: 0.45rem;
+  font: inherit;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 224, 157, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+button:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button:disabled:hover {
+  border-color: rgba(218, 173, 96, 0.65);
+  transform: none;
+}
+
+main {
+  padding: 0.5rem 1rem 1rem;
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.empty-state {
+  width: min(1800px, 100%);
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: clamp(1.1rem, 1.6vw, 1.6rem);
+  letter-spacing: 0.02em;
+}
+
+.matches {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  width: min(1800px, 100%);
+}
+
+.match-card {
+  --match-accent: rgba(193, 150, 82, 0.8);
+  --match-accent-soft: rgba(193, 150, 82, 0.5);
+  --match-link: #ffde9f;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, var(--match-accent-soft), transparent 34%),
+    linear-gradient(160deg, rgba(43, 33, 22, 0.94), rgba(26, 20, 14, 0.94));
+  border: 2px solid var(--panel-border);
+  border-radius: 0.7rem;
+  padding: 1.3rem;
+  min-height: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(97, 70, 35, 0.95),
+    0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.match-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 0.35rem;
+  background: linear-gradient(90deg, var(--match-accent), transparent 88%);
+}
+
+.player-qr {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.9rem;
+}
+
+.player-qr-image {
+  width: 130px;
+  height: 130px;
+  border-radius: 0.3rem;
+  border: 2px solid var(--match-accent);
+  background: #fff;
+}
+
+.player-qr-url {
+  font-size: 0.78rem;
+  color: var(--match-link);
+  word-break: break-all;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.match-card.hidden {
+  opacity: 0.35;
+}
+
+.match-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.match-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.match-title-display {
+  display: none;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  color: var(--title);
+  line-height: 1;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.3rem;
+}
+
+.match-title-group,
+.player label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 1rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.phone-link {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  color: var(--match-link);
+  text-decoration: none;
+  font-size: 0.92rem;
+  letter-spacing: 0.05em;
+}
+
+.phone-link:hover {
+  text-decoration: underline;
+}
+
+input {
+  width: 100%;
+  border: 1px solid rgba(176, 137, 74, 0.6);
+  background: rgba(25, 19, 12, 0.85);
+  color: #f0dfb6;
+  border-radius: 0.35rem;
+  padding: 0.65rem 0.7rem;
+  font: inherit;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.players {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: 1fr;
+}
+
+.player {
+  background:
+    linear-gradient(135deg, var(--match-accent-soft), transparent 58%),
+    linear-gradient(180deg, rgba(62, 47, 31, 0.92), rgba(36, 27, 18, 0.92));
+  border: 1px solid var(--match-accent-soft);
+  border-radius: 0.5rem;
+  padding: 1.1rem;
+  min-height: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 219, 152, 0.08),
+    inset 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.player-name-display {
+  display: none;
+  font-family: "Bebas Neue", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  color: #f4ddb0;
+  margin-bottom: 0.2rem;
+}
+
+.life-total {
+  text-align: center;
+  font-size: clamp(4.2rem, 9vw, 7.2rem);
+  font-family: "Bebas Neue", sans-serif;
+  line-height: 1;
+  color: #fff3d4;
+  margin: 0.6rem 0 0.6rem;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.75),
+    0 0 14px rgba(216, 165, 77, 0.25);
+}
+
+.life-total.low {
+  color: var(--danger);
+}
+
+.life-total.high {
+  color: var(--good);
+}
+
+.life-controls {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 0.9rem;
+}
+
+.life-btn {
+  font-size: 1.45rem;
+  padding: 0.8rem 0;
+}
+
+.toggle-visibility {
+  min-width: 5.2rem;
+}
+
+.match-card[data-hidden="true"] .players {
+  display: none;
+}
+
+.match-card[data-match-color="blue"] {
+  --match-accent: #4c8dff;
+  --match-accent-soft: rgba(76, 141, 255, 0.55);
+  --match-link: #b8d0ff;
+}
+
+.match-card[data-match-color="red"] {
+  --match-accent: #ff5b66;
+  --match-accent-soft: rgba(255, 91, 102, 0.55);
+  --match-link: #ffc2c8;
+}
+
+.match-card[data-match-color="green"] {
+  --match-accent: #39c36c;
+  --match-accent-soft: rgba(57, 195, 108, 0.55);
+  --match-link: #b8f3cc;
+}
+
+.match-card[data-match-color="orange"] {
+  --match-accent: #ff9a3d;
+  --match-accent-soft: rgba(255, 154, 61, 0.55);
+  --match-link: #ffd2a4;
+}
+
+.match-card[data-match-color="purple"] {
+  --match-accent: #a77bff;
+  --match-accent-soft: rgba(167, 123, 255, 0.55);
+  --match-link: #dfcbff;
+}
+
+.match-card[data-match-color] {
+  border-color: var(--match-accent-soft);
+  box-shadow:
+    inset 0 0 0 1px var(--match-accent-soft),
+    0 0 0 1px rgba(0, 0, 0, 0.2),
+    0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+body.is-fullscreen {
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+body.is-fullscreen .top-bar {
+  padding: clamp(0.5rem, 0.45vw, 1rem) clamp(0.8rem, 0.7vw, 1.6rem) clamp(0.35rem, 0.35vw, 0.8rem);
+}
+
+body.is-fullscreen .page-heading {
+  gap: clamp(0.5rem, 0.45vw, 1rem);
+}
+
+body.is-fullscreen .page-title {
+  font-size: clamp(1.7rem, 2.4vw, 5rem);
+}
+
+body.is-fullscreen .actions {
+  gap: clamp(0.45rem, 0.35vw, 0.8rem);
+}
+
+body.is-fullscreen .cycle-timer-group {
+  gap: clamp(0.28rem, 0.25vw, 0.55rem);
+}
+
+body.is-fullscreen button {
+  padding: clamp(0.55rem, 0.45vw, 1rem) clamp(0.85rem, 0.7vw, 1.5rem);
+  font-size: clamp(0.98rem, 0.62vw, 1.45rem);
+}
+
+/* Card scaling below is driven by actual viewport width, not the
+   fullscreen-API class - Windows often reaches "fullscreen" via window
+   maximize or native browser F11, neither of which fires the
+   fullscreenchange event that toggled this previously, so the board was
+   stuck at its small windowed size on real displays. */
+@media (min-width: 901px) {
+  main {
+    padding: clamp(0.4rem, 0.35vw, 0.8rem) clamp(0.75rem, 0.65vw, 1.5rem) clamp(0.75rem, 0.65vw, 1.5rem);
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .matches {
+    width: 100%;
+    height: 100%;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+    gap: clamp(0.65rem, 0.55vw, 1.4rem);
+  }
+
+  .match-card {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1rem, 0.85vw, 2.2rem);
+  }
+
+  .match-header {
+    margin-bottom: clamp(0.7rem, 0.55vw, 1.4rem);
+  }
+
+  .match-title-group,
+  .player label {
+    gap: clamp(0.22rem, 0.18vw, 0.45rem);
+    font-size: clamp(0.9rem, 0.52vw, 1.25rem);
+  }
+
+  input {
+    padding: clamp(0.52rem, 0.42vw, 0.95rem) clamp(0.6rem, 0.5vw, 1.15rem);
+    font-size: clamp(1rem, 0.6vw, 1.4rem);
+  }
+
+  .players {
+    flex: 1;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: clamp(0.8rem, 0.6vw, 1.5rem);
+  }
+
+  .player {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(0.85rem, 0.75vw, 1.8rem);
+  }
+
+  .player-qr {
+    gap: clamp(0.25rem, 0.2vw, 0.5rem);
+    margin-bottom: clamp(0.6rem, 0.45vw, 1.1rem);
+  }
+
+  .player-qr-image {
+    width: clamp(108px, 5.8vw, 230px);
+    height: clamp(108px, 5.8vw, 230px);
+  }
+
+  .player-qr-url {
+    font-size: clamp(0.68rem, 0.42vw, 1rem);
+  }
+
+  .phone-link {
+    font-size: clamp(0.82rem, 0.48vw, 1.15rem);
+  }
+
+  .life-total {
+    font-size: clamp(3.6rem, 4.7vw, 10.5rem);
+    margin: auto 0 clamp(0.5rem, 0.45vw, 1.1rem);
+  }
+
+  .life-controls {
+    gap: clamp(0.4rem, 0.35vw, 0.85rem);
+    margin-top: clamp(0.6rem, 0.45vw, 1.1rem);
+  }
+
+  .life-btn {
+    font-size: clamp(1.2rem, 0.78vw, 1.8rem);
+    padding: clamp(0.58rem, 0.5vw, 1.15rem) 0;
+  }
+
+  .match-actions {
+    gap: clamp(0.35rem, 0.3vw, 0.75rem);
+  }
+
+  .toggle-visibility {
+    min-width: clamp(4.8rem, 3.8vw, 8rem);
+  }
+}
+
+@media (max-width: 900px) {
+  .matches {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Phone sub-page */
+.phone-page {
+  min-height: 100vh;
+}
+
+.phone-main {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.phone-card {
+  width: min(700px, 100%);
+  background:
+    linear-gradient(160deg, rgba(43, 33, 22, 0.95), rgba(26, 20, 14, 0.95));
+  border: 2px solid var(--panel-border);
+  border-radius: 0.7rem;
+  padding: 1.2rem;
+  box-shadow:
+    inset 0 0 0 1px rgba(97, 70, 35, 0.95),
+    0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.phone-card h1 {
+  margin: 0;
+  font-size: clamp(3.2rem, 12vw, 5rem);
+}
+
+.phone-subtitle {
+  margin: 0.2rem 0 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+}
+
+.phone-players {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.phone-player {
+  background:
+    linear-gradient(180deg, rgba(62, 47, 31, 0.92), rgba(36, 27, 18, 0.92));
+  border: 1px solid rgba(193, 150, 82, 0.72);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 219, 152, 0.08),
+    inset 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.phone-player-name {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.04em;
+  color: #f4ddb0;
+  font-size: clamp(2.4rem, 9vw, 3.4rem);
+}
+
+.phone-name-label {
+  display: block;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.phone-name-input {
+  width: 100%;
+  border: 1px solid rgba(176, 137, 74, 0.6);
+  background: rgba(25, 19, 12, 0.85);
+  color: #f0dfb6;
+  border-radius: 0.35rem;
+  padding: 0.65rem 0.7rem;
+  font: inherit;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.phone-life {
+  text-align: center;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(5.4rem, 24vw, 9rem);
+  line-height: 1;
+  color: #fff3d4;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.75),
+    0 0 14px rgba(216, 165, 77, 0.25);
+  margin: 0.4rem 0 0.6rem;
+}
+
+.phone-life.low {
+  color: var(--danger);
+}
+
+.phone-life.high {
+  color: var(--good);
+}
+
+.phone-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.phone-btn {
+  font-size: 1.8rem;
+  padding: 1rem 0;
+}
+
+.phone-reset-btn {
+  margin-top: 0.65rem;
+  width: 100%;
+  font-size: 1.05rem;
+  padding: 0.8rem 0.4rem;
+}
+
+.phone-match-actions {
+  margin-top: 0.65rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+body[data-player-view="1"] .phone-player[data-player="2"],
+body[data-player-view="2"] .phone-player[data-player="1"] {
+  display: none;
+}
+
+.phone-match-actions .phone-reset-btn {
+  margin-top: 0;
+}
+
+.phone-btn:active {
+  transform: translateY(1px);
+  filter: brightness(1.08);
+}
+
+/* Operator sub-page */
+.operator-page {
+  min-height: 100vh;
+}
+
+.operator-main {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.operator-card {
+  width: min(440px, 100%);
+  display: grid;
+  gap: 1.2rem;
+  background:
+    linear-gradient(160deg, rgba(43, 33, 22, 0.95), rgba(26, 20, 14, 0.95));
+  border: 2px solid var(--panel-border);
+  border-radius: 0.7rem;
+  padding: 1.4rem;
+  box-shadow:
+    inset 0 0 0 1px rgba(97, 70, 35, 0.95),
+    0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.operator-title {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.06em;
+  color: var(--title);
+  font-size: clamp(2.2rem, 8vw, 3rem);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.operator-status {
+  margin-top: -0.7rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+}
+
+.operator-group {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.operator-label {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.operator-block-btn {
+  width: 100%;
+}
+
+.operator-mode-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.operator-danger {
+  border-color: rgba(239, 68, 68, 0.65);
+}
+
+.operator-danger:hover {
+  border-color: #ef4444;
+}
+
+.operator-match-list {
+  display: grid;
+  gap: 0.3rem;
+  max-height: 17rem;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border: 1px solid rgba(176, 137, 74, 0.4);
+  border-radius: 0.4rem;
+  background: rgba(20, 15, 10, 0.5);
+}
+
+.operator-match-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 0.3rem;
+  cursor: pointer;
+}
+
+.operator-match-row:hover {
+  background: rgba(216, 165, 77, 0.08);
+}
+
+.operator-match-row input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  accent-color: var(--accent);
+}
+
+.operator-match-row-text {
+  font-size: 0.88rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.operator-match-row.is-hidden-match .operator-match-row-text {
+  color: var(--muted);
+  text-decoration: line-through;
+}

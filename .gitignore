@@ -1,0 +1,27 @@
+# Python runtime fetched by 1_SETUP.bat - never committed, ~22 MB
+python/
+python-embed.zip
+python-3*-embed-amd64.zip
+
+# PyInstaller output
+build/
+dist/
+*.pyc
+__pycache__/
+
+# The built executable ships as a GitHub Release asset, not in the repo
+MTG_Display.exe
+MTG_Display.zip
+
+# Local-only art that is not part of the app
+Pictures/*
+!Pictures/MTG.png
+!Pictures/YuGiOh.png
+
+# Windows / editor cruft
+desktop.ini
+Thumbs.db
+*.lnk
+.claude/
+.vscode/
+.idea/

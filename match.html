@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MTG Match Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="phone-page">
+  <main class="phone-main">
+    <section class="phone-card">
+      <div class="phone-players">
+        <article class="phone-player" data-player="1">
+          <label class="phone-name-label" for="player1NameInput">Player 1 Name</label>
+          <input class="phone-name-input" id="player1NameInput" type="text" maxlength="25" value="Player 1" />
+          <h2 class="phone-player-name" id="player1Name">Player 1</h2>
+          <div class="phone-life" id="player1Life">20</div>
+          <div class="phone-controls">
+            <button class="phone-btn" data-player="1" data-delta="-5" type="button">-5</button>
+            <button class="phone-btn" data-player="1" data-delta="-1" type="button">-1</button>
+            <button class="phone-btn" data-player="1" data-delta="1" type="button">+1</button>
+            <button class="phone-btn" data-player="1" data-delta="5" type="button">+5</button>
+          </div>
+        </article>
+
+        <article class="phone-player" data-player="2">
+          <label class="phone-name-label" for="player2NameInput">Player 2 Name</label>
+          <input class="phone-name-input" id="player2NameInput" type="text" maxlength="25" value="Player 2" />
+          <h2 class="phone-player-name" id="player2Name">Player 2</h2>
+          <div class="phone-life" id="player2Life">20</div>
+          <div class="phone-controls">
+            <button class="phone-btn" data-player="2" data-delta="-5" type="button">-5</button>
+            <button class="phone-btn" data-player="2" data-delta="-1" type="button">-1</button>
+            <button class="phone-btn" data-player="2" data-delta="1" type="button">+1</button>
+            <button class="phone-btn" data-player="2" data-delta="5" type="button">+5</button>
+          </div>
+        </article>
+      </div>
+      <div class="phone-match-actions">
+        <button class="phone-btn phone-reset-btn" id="player2ResetBtn" type="button">Reset Match</button>
+        <button class="phone-btn phone-reset-btn" id="phoneFullscreenBtn" type="button">Full Screen</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/match.js"></script>
+</body>
+</html>
