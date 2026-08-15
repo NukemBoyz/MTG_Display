@@ -62,13 +62,15 @@ shows empty slots.
 
 ## Options
 
-Run from a terminal, or edit `MTG_OPTIONS` in `2_START_MTG.bat`:
-
 ```
 --ip 192.168.1.50    force the address used in QR codes
 --port 8090          use a different port
 --no-browser         do not auto-open the board
 ```
+
+Pass them on the command line — `MTG_Display.exe --ip 192.168.1.50 --port 8090`.
+To keep a setting permanently, make a shortcut to the `.exe` and add the flags to
+the end of its Target field; double-clicking the shortcut then always uses them.
 
 The server ranks the PC's network adapters and prefers real LAN addresses, so
 VPNs (Tailscale, WireGuard) and virtual adapters (Hyper-V, Docker, VirtualBox)
@@ -78,18 +80,22 @@ do not hijack the QR codes. Use `--ip` if it still picks wrong.
 
 ## Running from source
 
-The `.exe` is just this Python program frozen with PyInstaller. To run it
-directly instead:
-
-1. Double-click `1_SETUP.bat` — downloads Python's official embeddable package
-   into `python/`. Needs internet, takes about a minute, done once.
-2. Double-click `2_START_MTG.bat`.
-
-Only the standard library is used, so any Python 3.11+ works:
+The `.exe` is just this Python program frozen with PyInstaller. Only the standard
+library is used, so any Python 3.11+ runs it as-is:
 
 ```bash
 python server.py
 ```
+
+If there is no Python on the machine, fetch a private one — Python's official
+embeddable package, unpacked into `python/`, nothing installed:
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\setup_python.ps1
+```
+
+Then double-click `run_from_source.bat`, which serves straight out of the folder
+so edits to the HTML, CSS and JS show up on a restart with no rebuild.
 
 ### Building the .exe
 
@@ -100,6 +106,9 @@ pyinstaller MTG_Display.spec
 
 Output lands in `dist/MTG_Display.exe`. It is fully self-contained — the HTML,
 CSS, JavaScript and backgrounds are all bundled inside.
+
+A release is that `.exe` plus `ALLOW_FIREWALL.bat`, zipped as `MTG_Display.zip`
+and attached to the tag. Neither the `.exe` nor the zip is committed here.
 
 ---
 
@@ -119,6 +128,24 @@ check with `netsh interface ipv4 show excludedportrange protocol=tcp`.
 
 **SmartScreen warns about the .exe**
 It is unsigned. Click "More info" then "Run anyway", or run from source instead.
+
+---
+
+## Repo layout
+
+| path | what it is |
+| --- | --- |
+| `server.py` | the whole backend — stdlib HTTP server, state file, LAN address ranking |
+| `index.html` `script.js` `styles.css` | the board |
+| `match.html` `match.js` | the phone counter, served at `/match/<n>/player/<1\|2>` |
+| `operator.html` `operator.js` | the operator control window |
+| `Pictures/` | the two backdrops, one per life mode |
+| `Icons/` | app icons; `MTG_Cards.ico` is the one the build uses |
+| `MTG_Display.spec` | PyInstaller recipe |
+| `ALLOW_FIREWALL.bat` | ships to users — opens port 8080 if the firewall prompt was missed |
+| `run_from_source.bat` | dev only — runs `server.py` via `python/` |
+| `scripts/setup_python.ps1` | dev only — fetches the embeddable Python into `python/` |
+| `scripts/gen_icon.py` | one-off, regenerates the icons |
 
 ---
 

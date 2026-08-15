@@ -1,15 +1,21 @@
-# Downloads Python's official "embeddable package" and unpacks it into
-# .\python. Nothing is installed: no registry keys, no PATH changes, no
-# admin rights. Deleting this folder removes every trace.
+# Downloads Python's official "embeddable package" and unpacks it into the
+# project's  python\  folder, which run_from_source.bat and .claude\launch.json
+# use to serve server.py directly. Nothing is installed: no registry keys, no
+# PATH changes, no admin rights. Deleting python\ removes every trace.
+#
+# End users do not need this - they run MTG_Display.exe. This is dev tooling.
+#
+#   powershell -ExecutionPolicy Bypass -File scripts\setup_python.ps1
 
 $ErrorActionPreference = "Stop"
-Set-Location -LiteralPath $PSScriptRoot
+$root = Split-Path -Parent $PSScriptRoot
+Set-Location -LiteralPath $root
 
 function Say($msg, $colour = "Gray") { Write-Host "  $msg" -ForegroundColor $colour }
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Cyan
-Write-Host "   MTG Display - one time setup" -ForegroundColor Cyan
+Write-Host "   MTG Display - embeddable Python for running from source" -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -17,19 +23,18 @@ Write-Host ""
 if (Test-Path ".\python\python.exe") {
     Say "Python is already set up here. Nothing to do." "Green"
     Write-Host ""
-    Say "Start the scoreboard with:  2_START_MTG.bat" "White"
+    Say "Run from source with:  run_from_source.bat" "White"
     Write-Host ""
-    Read-Host "Press Enter to close"
     exit 0
 }
 
 $zipPath = $null
 
-# Did the user already drop an embeddable zip in this folder?
+# Did someone already drop an embeddable zip in the project folder?
 $existing = Get-ChildItem -Filter "python-3*-embed-amd64.zip" -ErrorAction SilentlyContinue |
             Sort-Object Name -Descending | Select-Object -First 1
 if ($existing) {
-    Say "Found a Python zip you already downloaded:" "Green"
+    Say "Found a Python zip already downloaded:" "Green"
     Say "   $($existing.Name)"
     $zipPath = $existing.FullName
 }
@@ -48,7 +53,7 @@ if (-not $zipPath) {
     $versions = @("3.12.10", "3.12.8", "3.12.7", "3.12.4",
                   "3.11.9", "3.13.2", "3.13.1")
 
-    $target = Join-Path $PSScriptRoot "python-embed.zip"
+    $target = Join-Path $root "python-embed.zip"
     $prev = $ProgressPreference
     $ProgressPreference = "SilentlyContinue"
 
@@ -79,14 +84,10 @@ if (-not $zipPath) {
     Say "  1. Open  https://www.python.org/downloads/windows/"
     Say "  2. Under any Python 3.11, 3.12 or 3.13 release, find"
     Say "     'Windows embeddable package (64-bit)'"
-    Say "  3. Save that .zip into THIS folder:"
-    Say "     $PSScriptRoot"
-    Say "  4. Run 1_SETUP.bat again - it will pick the zip up."
+    Say "  3. Save that .zip into:"
+    Say "     $root"
+    Say "  4. Run this script again - it will pick the zip up."
     Write-Host ""
-    Say "If your workplace or ISP blocks python.org, that is the" "DarkGray"
-    Say "likely cause of the failure above." "DarkGray"
-    Write-Host ""
-    Read-Host "Press Enter to close"
     exit 1
 }
 
@@ -102,7 +103,6 @@ try {
     Say "Windows may have blocked it. Right-click the .zip, choose"
     Say "Properties, tick 'Unblock' if you see it, then try again."
     Write-Host ""
-    Read-Host "Press Enter to close"
     exit 1
 }
 
@@ -112,7 +112,6 @@ if (-not (Test-Path ".\python\python.exe")) {
     Say "Make sure you grabbed the 'embeddable package (64-bit)',"
     Say "not the installer and not the source tarball."
     Write-Host ""
-    Read-Host "Press Enter to close"
     exit 1
 }
 
@@ -127,29 +126,12 @@ try {
     Say "is missing. Install it from:"
     Say "  https://aka.ms/vs/17/release/vc_redist.x64.exe"
     Write-Host ""
-    Read-Host "Press Enter to close"
     exit 1
 }
 
-# Tidy up the downloaded archive (keep a zip the user supplied themselves)
-if ($zipPath -eq (Join-Path $PSScriptRoot "python-embed.zip")) {
+# Tidy up the downloaded archive (keep a zip supplied by hand)
+if ($zipPath -eq (Join-Path $root "python-embed.zip")) {
     Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
-}
-
-# Desktop shortcut so it feels like a normal program
-try {
-    $desktop = [Environment]::GetFolderPath("Desktop")
-    $lnk = Join-Path $desktop "MTG Display.lnk"
-    $shell = New-Object -ComObject WScript.Shell
-    $sc = $shell.CreateShortcut($lnk)
-    $sc.TargetPath = Join-Path $PSScriptRoot "2_START_MTG.bat"
-    $sc.WorkingDirectory = $PSScriptRoot
-    $sc.Description = "MTG Display scoreboard"
-    $sc.IconLocation = Join-Path $PSScriptRoot "Icons\MTG_Cards.ico"
-    $sc.Save()
-    Say "Desktop shortcut created: MTG Display" "Green"
-} catch {
-    Say "(could not create a desktop shortcut - not a problem)" "DarkGray"
 }
 
 Write-Host ""
@@ -157,13 +139,5 @@ Write-Host "============================================================" -Foreg
 Write-Host "   READY" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host ""
-Say "Start the scoreboard with either:" "White"
+Say "Run from source with:  run_from_source.bat" "White"
 Write-Host ""
-Say "   the 'MTG Display' icon on your Desktop" "White"
-Say "   or  2_START_MTG.bat  in this folder" "White"
-Write-Host ""
-Say "Nothing was installed. This whole folder is self-contained -" "DarkGray"
-Say "copy it to a USB stick or another PC and it works there too." "DarkGray"
-Write-Host ""
-Read-Host "Press Enter to close"
-exit 0

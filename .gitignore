@@ -1,4 +1,4 @@
-# Python runtime fetched by 1_SETUP.bat - never committed, ~22 MB
+# Python runtime fetched by scripts/setup_python.ps1 - never committed, ~22 MB
 python/
 python-embed.zip
 python-3*-embed-amd64.zip
