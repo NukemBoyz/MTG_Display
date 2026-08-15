@@ -14,10 +14,11 @@ Nothing is installed. No admin rights, no registry changes, no PATH changes.
 
 ## Download and run
 
-1. Grab the latest `MTG_Display.zip` from the
-   [Releases page](../../releases/latest).
-2. Unzip it anywhere — Desktop or Documents is fine.
-3. Double-click `MTG_Display.exe`.
+1. Download `MTG_Display.exe` from the [Releases page](../../releases/latest).
+2. Put it anywhere — Desktop or Documents is fine.
+3. Double-click it.
+
+That one file is the whole program. Nothing to unzip, nothing to install.
 
 A console window opens showing the address, and the board opens in your browser:
 
@@ -30,8 +31,10 @@ Leave the console window open — closing it stops the server. Phones must be on
 the **same Wi-Fi** as the PC.
 
 On first run Windows will ask whether to allow it through the firewall. Say yes,
-or phones will not be able to reach the board. If you miss that prompt, run
-`ALLOW_FIREWALL.bat` as administrator.
+or phones will not be able to reach the board. There is no second prompt — if
+that one got dismissed, grab `ALLOW_FIREWALL.bat` from the same Releases page
+and right-click → Run as administrator. It adds one inbound rule for TCP 8080
+and nothing else.
 
 ---
 
@@ -107,8 +110,9 @@ pyinstaller MTG_Display.spec
 Output lands in `dist/MTG_Display.exe`. It is fully self-contained — the HTML,
 CSS, JavaScript and backgrounds are all bundled inside.
 
-A release is that `.exe` plus `ALLOW_FIREWALL.bat`, zipped as `MTG_Display.zip`
-and attached to the tag. Neither the `.exe` nor the zip is committed here.
+A release is that `.exe` and `ALLOW_FIREWALL.bat` attached to the tag as two
+separate assets — no archive, so the common case is one download and a
+double-click. The `.exe` is not committed here.
 
 ---
 
