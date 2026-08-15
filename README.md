@@ -10,6 +10,8 @@ backdrop, follows the mode.
 
 Nothing is installed. No admin rights, no registry changes, no PATH changes.
 
+![The board in Magic mode, five matches with QR codes and life totals](docs/board-mtg.png)
+
 ---
 
 ## Download and run
@@ -42,6 +44,7 @@ and nothing else.
 
 **The board** shows five matches at a time, scaling to fill the screen from
 1080p up to 4K. Each player gets a QR code linking to their own phone counter.
+Low totals turn red, so a table in trouble is visible from across the room.
 
 **The operator window** (the `Operator` button, top right) is the control panel:
 
@@ -57,6 +60,13 @@ and nothing else.
 
 As matches finish, untick them. Remaining matches consolidate so the board never
 shows empty slots.
+
+<img src="docs/operator.png" alt="The operator control window" width="380">
+
+**Switching life systems changes the whole board**, backdrop included, and
+resets every total to the new starting life:
+
+![The same board in Yu-Gi-Oh mode, all totals at 8000](docs/board-yugioh.png)
 
 **Match state is saved automatically** to
 `%LOCALAPPDATA%\MTG_Display\state.json`. Delete that file to wipe everything.
